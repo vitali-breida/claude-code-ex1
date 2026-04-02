@@ -32,13 +32,30 @@ npm start
 
 ## Example requests
 
+**Normal flow:**
 ```
 > what's my savings balance?
 > what happened in my checking account recently?
 > transfer $500 from savings to checking
-> transfer $1500 from savings to checking
 > get exchange rate from USD to EUR
+```
+
+**Error handling** — tools return structured errors, Claude explains them in plain English:
+```
+> get exchange rate for XYZ to USD      # transient error (service unavailable, retryable)
+> transfer -50 from savings to checking # validation error (amount must be positive)
+> transfer $500 from savings to savings # permission error (same account)
+```
+
+**Escalation** — transfers above $1000 are intercepted before the tool executes:
+```
+> transfer $1500 from savings to checking
+```
+
+**Multi-concern** — agent handles multiple requests in one message:
+```
 > check my balance and transfer $500 from savings to checking
+> check my balance and transfer $1500 from savings to checking
 ```
 
 ## Project structure

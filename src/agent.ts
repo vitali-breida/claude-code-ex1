@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { TOOL_DEFINITIONS } from "./tools/definitions.ts";
 import { executeToolHandler } from "./tools/handlers.ts";
+import { intercept } from "./tools/hook.ts";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.MODEL ?? "claude-opus-4-5";
@@ -39,6 +40,19 @@ export async function runAgent(
       const toolResults: Anthropic.ToolResultBlockParam[] = [];
 
       for (const toolUseBlock of toolUseBlocks) {
+        // ── Hook: check business rules before executing ──────────────────────
+        const interceptResult = intercept(toolUseBlock);
+        if (interceptResult.wasBlocked) {
+          toolResults.push({
+            type: "tool_result",
+            tool_use_id: toolUseBlock.id,
+            content: interceptResult.escalationMessage!,
+            is_error: false,
+          });
+          continue;
+        }
+
+        // ── Execute the tool handler ─────────────────────────────────────────
         const result = executeToolHandler(
           toolUseBlock.name,
           toolUseBlock.input as Record<string, unknown>
