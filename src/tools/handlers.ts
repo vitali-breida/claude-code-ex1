@@ -1,4 +1,4 @@
-import { ToolErrorResponse, ToolResponse } from "../types.js";
+import type { ToolErrorResponse, ToolResponse } from "../types.ts";
 
 // ── Fake data ─────────────────────────────────────────────────────────────────
 
