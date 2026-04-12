@@ -69,7 +69,7 @@ export async function runAgent(
       }
 
       // Feed results back as a user message — loop continues
-      history.push({ role: "user", content: toolResults });
+    history.push({ role: "user", content: toolResults });
       continue;
     }
 
