@@ -4,7 +4,7 @@
   "description": "Exercise 1: Multi-Tool Agent with Escalation Logic",
   "type": "module",
   "scripts": {
-    "start": "ts-node --esm src/index.ts",
+    "start": "tsx src/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.3",
     "typescript": "^5.5.0"
   }
 }

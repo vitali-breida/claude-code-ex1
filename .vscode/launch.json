@@ -4,9 +4,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug: src/index.ts (ts-node --esm)",
-      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/ts-node",
-      "runtimeArgs": ["--esm", "src/index.ts"],
+      "name": "Debug: src/index.ts (tsx)",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/tsx",
+      "args": ["src/index.ts"],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "skipFiles": [

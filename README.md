@@ -1,72 +1,105 @@
-# Multi-Tool Agent — Exercise 1
+# Multi-Tool Finance Agent
 
-Learning project: agentic loop with tool integration, structured errors, and escalation logic.
+A CLI assistant that manages a fake personal finance account.
+You type a request in plain English — the agent calls the right tools and responds.
+
 Built with [Anthropic SDK](https://github.com/anthropic/anthropic-sdk-typescript) + TypeScript.
 
-## What it does
-
-A CLI assistant that manages a fake personal finance account. You type a request in plain English, the agent calls the appropriate tools and returns a response.
-
-**Available tools:**
-- `get_account_balance` — current balance for an account
-- `get_transaction_history` — list of past transactions
-- `transfer_funds` — move money between accounts (blocked above $1000)
-- `get_exchange_rate` — currency conversion rate
+---
 
 ## Setup
 
+**1. Install dependencies**
 ```bash
 npm install
 ```
 
-Add your API key to `.env`:
+**2. Create a `.env` file in the project root**
 ```
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-## Run
-
+**3. Start the assistant**
 ```bash
 npm start
 ```
 
-## Example requests
+You'll see:
+```
+Finance Assistant ready. Type your message or "exit" to quit.
 
-**Normal flow:**
+>
+```
+
+Type `exit` to quit.
+
+---
+
+## What you can do
+
+### Check a balance
 ```
 > what's my savings balance?
+> how much is in my checking account?
+```
+
+### View transaction history
+```
 > what happened in my checking account recently?
+> show me the last 3 transactions in savings
+```
+
+### Transfer funds
+```
 > transfer $500 from savings to checking
-> get exchange rate from USD to EUR
 ```
 
-**Error handling** — tools return structured errors, Claude explains them in plain English:
-```
-> get exchange rate for XYZ to USD      # transient error (service unavailable, retryable)
-> transfer -50 from savings to checking # validation error (amount must be positive)
-> transfer $500 from savings to savings # permission error (same account)
-```
-
-**Escalation** — transfers above $1000 are intercepted before the tool executes:
+Transfers above **$1000** are blocked and routed for approval:
 ```
 > transfer $1500 from savings to checking
+# → creates an escalation ticket, transfer is NOT processed
 ```
 
-**Multi-concern** — agent handles multiple requests in one message:
+### Get an exchange rate
+```
+> get exchange rate from USD to EUR
+> how much is 1 GBP in USD?
+```
+
+Supported currency pairs: `USD↔EUR`, `USD↔GBP`, `EUR↔GBP`
+
+### Multiple requests at once
 ```
 > check my balance and transfer $500 from savings to checking
-> check my balance and transfer $1500 from savings to checking
 ```
 
-## Project structure
+---
 
-```
-src/
-├── index.ts          # CLI REPL
-├── agent.ts          # Agentic loop (while + stop_reason)
-├── types.ts          # Shared types (ToolResponse, ErrorCategory, EscalationRecord)
-└── tools/
-    ├── definitions.ts  # Tool schemas sent to Claude
-    ├── handlers.ts     # Tool implementations (fake data)
-    └── hook.ts         # Pre-execution interceptor + escalation
-```
+## Error scenarios
+
+The agent explains errors in plain English. You can trigger them intentionally:
+
+| Scenario | Example |
+|---|---|
+| Unknown currency (transient error) | `get exchange rate for XYZ to USD` |
+| Negative transfer amount (validation error) | `transfer -50 from savings to checking` |
+| Same-account transfer (permission error) | `transfer $500 from savings to savings` |
+| Large transfer (escalation) | `transfer $1500 from savings to checking` |
+
+---
+
+## Fake account data
+
+| Account | Balance |
+|---|---|
+| `SAVINGS-001` | $2,340.50 |
+| `CHECKING-001` | $850.00 |
+
+---
+
+## Configuration
+
+| Variable | Default | Description |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | *(required)* | Your Anthropic API key |
+| `MODEL` | `claude-opus-4-5` | Claude model to use |
