@@ -26,6 +26,25 @@ function triggerEscalation(request: EscalationRequest): EscalationRecord {
 const TRANSFER_THRESHOLD = 1000;
 
 export function intercept(toolUseBlock: Anthropic.ToolUseBlock): InterceptResult {
+  if (toolUseBlock.name === "freeze_account") {
+    const reason = ((toolUseBlock.input as Record<string, unknown>).reason as string).toLowerCase();
+    if (reason.includes("bulk") || reason.includes("system")) {
+      const record = triggerEscalation({
+        requestedTool: toolUseBlock.name,
+        input: toolUseBlock.input as Record<string, unknown>,
+        reason: `System-initiated freeze requires manager approval`,
+      });
+      return {
+        wasBlocked: true,
+        escalationMessage:
+          `Automated freeze requires manager approval. ` +
+          `Escalation ticket ${record.ticketId} has been created. ` +
+          `The account has NOT been frozen and is pending approval.`,
+      };
+    }
+    return { wasBlocked: false };
+  }
+
   // Only transfer_funds is subject to the threshold rule
   if (toolUseBlock.name !== "transfer_funds") {
     return { wasBlocked: false };

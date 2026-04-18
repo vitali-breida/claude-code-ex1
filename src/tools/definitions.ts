@@ -90,4 +90,26 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
       required: ["from", "to"],
     },
   },
+  {
+    name: "freeze_account",
+    description:
+      "Freezes a specified account, preventing any outgoing transfers. " +
+      "Use this when suspicious activity is detected or the user wants to lock down an account. " +
+      "Balance checks and transaction history remain accessible on a frozen account. " +
+      "Freezing an already-frozen account returns an error.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        accountId: {
+          type: "string",
+          description: "Account identifier to freeze, e.g. 'SAVINGS-001'",
+        },
+        reason: {
+          type: "string",
+          description: "Reason for freezing the account (recorded in audit log)",
+        },
+      },
+      required: ["accountId", "reason"],
+    },
+  },
 ];

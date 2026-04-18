@@ -1,4 +1,8 @@
-import type { ToolErrorResponse, ToolResponse } from "../types.ts";
+import type { FreezeRecord, ToolErrorResponse, ToolResponse } from "../types.ts";
+
+// ── Frozen accounts state ─────────────────────────────────────────────────────
+
+const frozenAccounts = new Set<string>();
 
 // ── Fake data ─────────────────────────────────────────────────────────────────
 
@@ -79,6 +83,15 @@ function transferFunds(
     return { error: err };
   }
 
+  if (frozenAccounts.has(fromAccount)) {
+    const err: ToolErrorResponse = {
+      errorCategory: "permission",
+      isRetryable: false,
+      description: `Account '${fromAccount}' is frozen. Outgoing transfers are not permitted.`,
+    };
+    return { error: err };
+  }
+
   if (fromAccount === toAccount) {
     const err: ToolErrorResponse = {
       errorCategory: "permission",
@@ -131,6 +144,36 @@ function getExchangeRate(
   return { data: { from, to, rate } };
 }
 
+function freezeAccount(accountId: string, reason: string): ToolResponse<FreezeRecord> {
+  if (!ACCOUNTS[accountId]) {
+    const err: ToolErrorResponse = {
+      errorCategory: "validation",
+      isRetryable: false,
+      description: `Account '${accountId}' not found. Valid accounts: ${Object.keys(ACCOUNTS).join(", ")}`,
+    };
+    return { error: err };
+  }
+
+  if (frozenAccounts.has(accountId)) {
+    const err: ToolErrorResponse = {
+      errorCategory: "validation",
+      isRetryable: false,
+      description: `Account '${accountId}' is already frozen.`,
+    };
+    return { error: err };
+  }
+
+  frozenAccounts.add(accountId);
+  return {
+    data: {
+      accountId,
+      status: "frozen",
+      frozenAt: new Date().toISOString(),
+      reason,
+    },
+  };
+}
+
 // ── Dispatcher ────────────────────────────────────────────────────────────────
 
 export function executeToolHandler(
@@ -156,6 +199,9 @@ export function executeToolHandler(
 
     case "get_exchange_rate":
       return getExchangeRate(input.from as string, input.to as string);
+
+    case "freeze_account":
+      return freezeAccount(input.accountId as string, input.reason as string);
 
     default:
       return {

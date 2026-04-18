@@ -13,6 +13,15 @@ export interface ToolErrorResponse {
 
 export type ToolResponse<T> = { data: T } | { error: ToolErrorResponse };
 
+// ── Freeze types ──────────────────────────────────────────────────────────────
+
+export interface FreezeRecord {
+  accountId: string;
+  status: "frozen";
+  frozenAt: string;
+  reason: string;
+}
+
 // ── Escalation types ──────────────────────────────────────────────────────────
 
 export interface EscalationRequest {
