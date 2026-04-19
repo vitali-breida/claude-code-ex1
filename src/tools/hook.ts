@@ -23,7 +23,7 @@ function triggerEscalation(request: EscalationRequest): EscalationRecord {
 
 // ── Pre-execution interceptor ─────────────────────────────────────────────────
 
-const TRANSFER_THRESHOLD = 0;
+const TRANSFER_THRESHOLD = 1000;
 
 export function intercept(toolUseBlock: Anthropic.ToolUseBlock): InterceptResult {
   if (toolUseBlock.name === "freeze_account") {
