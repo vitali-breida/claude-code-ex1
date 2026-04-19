@@ -1,5 +1,7 @@
 # Multi-Tool Finance Agent
 
+📖 **[API Documentation](https://vitali-breida.github.io/claude-code-ex1/)**
+
 A CLI assistant that manages a fake personal finance account.
 You type a request in plain English — the agent calls the right tools and responds.
 
