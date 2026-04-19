@@ -17,6 +17,8 @@ permissions:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -33,27 +35,82 @@ jobs:
         run: npm run typecheck
 
       - name: Test
-        run: npm test
+        id: test
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee test-output.txt
+        continue-on-error: true
+
+      - name: Upload test output on failure
+        if: steps.test.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output
+          path: test-output.txt
+          retention-days: 1
 
       - name: Check docs
+        if: steps.test.outcome == 'success'
         run: npm run check-docs
 
       - name: Generate docs
+        if: steps.test.outcome == 'success'
         run: npm run docs
 
       - name: Upload Pages artifact
-        if: github.ref == 'refs/heads/main'
+        if: steps.test.outcome == 'success' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs/
 
+      - name: Fail if tests failed
+        if: steps.test.outcome == 'failure'
+        run: exit 1
+
+  ai-fix:
+    needs: ci
+    if: failure() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Download test output
+        uses: actions/download-artifact@v4
+        with:
+          name: test-output
+
+      - name: Run AI fix
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: node scripts/ai-fix.mjs
+
   deploy:
     needs: ci
-    if: github.ref == 'refs/heads/main'
+    if: success() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
 
     steps:
       - name: Deploy to GitHub Pages
