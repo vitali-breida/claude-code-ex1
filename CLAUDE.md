@@ -56,3 +56,17 @@ src/
 2. Add the handler function in `tools/handlers.ts` and register it in `executeToolHandler`
 3. Add any pre-execution rules to `tools/hook.ts` if needed
 4. Add new types to `types.ts` if the response shape is new
+5. Add the tool name to `README.md` (CI will fail if missing — checked by `scripts/check-docs.mjs`)
+6. Add unit tests in `src/tools/handlers.test.ts` covering happy path and error cases
+
+### Testing
+- Test runner: Vitest (`npm test`)
+- Test files live next to source: `handlers.test.ts`, `hook.test.ts`
+- Write tests directly from Gherkin acceptance criteria when available
+- Do not mock `frozenAccounts` or module state — rely on test execution order within a describe block
+
+### Observability
+- `agent.ts` emits JSON-L to `stderr` on every tool call and agent iteration
+- Event types: `tool_call`, `tool_escalated`, `agent_iteration`
+- Every log entry includes `ts` (ISO timestamp); `tool_call` also includes `durationMs`
+- Do not log sensitive financial amounts or PII in free-text fields

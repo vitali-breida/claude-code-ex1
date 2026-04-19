@@ -176,6 +176,11 @@ function freezeAccount(accountId: string, reason: string): ToolResponse<FreezeRe
 
 // ── Dispatcher ────────────────────────────────────────────────────────────────
 
+/**
+ * Dispatches a tool call by name to its handler.
+ * Returns a structured ToolResponse — never throws.
+ * Unknown tool names return a validation error rather than crashing the agent loop.
+ */
 export function executeToolHandler(
   name: string,
   input: Record<string, unknown>

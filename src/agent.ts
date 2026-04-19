@@ -12,6 +12,12 @@ function log(event: string, data: Record<string, unknown>): void {
   process.stderr.write(JSON.stringify({ ts: new Date().toISOString(), event, ...data }) + "\n");
 }
 
+/**
+ * Runs the agentic loop for a single user turn.
+ * Mutates `history` in place — appends user message, assistant content, and tool results.
+ * Returns Claude's final text response once stop_reason is "end_turn".
+ * Throws on unexpected stop_reason values (programmer error, not user error).
+ */
 export async function runAgent(
   userMessage: string,
   history: Anthropic.MessageParam[]

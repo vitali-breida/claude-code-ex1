@@ -1,0 +1,8 @@
+{
+  "entryPoints": ["src/agent.ts", "src/tools/handlers.ts", "src/tools/hook.ts", "src/types.ts"],
+  "out": "docs",
+  "name": "Multi-Tool Finance Agent",
+  "readme": "README.md",
+  "excludePrivate": true,
+  "excludeInternal": true
+}
