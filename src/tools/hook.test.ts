@@ -19,6 +19,12 @@ describe("intercept — transfer_funds", () => {
     expect(result.wasBlocked).toBe(false);
   });
 
+  // Regression: TRANSFER_THRESHOLD must not be 0 — all legitimate transfers would be blocked
+  it("allows a $1 transfer (guards against zero threshold regression)", () => {
+    const result = intercept(makeToolUse("transfer_funds", { amount: 1 }));
+    expect(result.wasBlocked).toBe(false);
+  });
+
   it("blocks transfers above the threshold and creates escalation ticket", () => {
     const before = escalationLog.length;
     const result = intercept(makeToolUse("transfer_funds", { amount: 1001 }));
