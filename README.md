@@ -141,6 +141,26 @@ The agent explains errors in plain English. You can trigger them intentionally:
 
 ---
 
+## AI Auto-Fix
+
+When a PR fails tests, the CI pipeline automatically triggers an `ai-fix` job that:
+
+1. Downloads the test failure output
+2. Reads the relevant source files
+3. Calls Claude API to analyze the failure and generate a minimal fix
+4. Commits the fix to the PR branch with the tag `[needs-review]`
+5. Posts a comment on the PR listing the changed files
+
+**Human review is required before merge** — the fix is never applied automatically to `main`.
+
+```
+PR pushed → CI tests fail → ai-fix job runs → Claude commits fix → review & merge
+```
+
+To enable: add `ANTHROPIC_API_KEY` to repository secrets (Settings → Secrets → Actions).
+
+---
+
 ## Observability
 
 The agent writes structured JSON-L logs to `stderr` on every iteration:
